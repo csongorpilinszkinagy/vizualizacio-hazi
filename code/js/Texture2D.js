@@ -1,5 +1,3 @@
-'use strict';
-
 const Texture2D = function(gl, mediaFileUrl) {
     gl.pendingResources[mediaFileUrl] = ++gl.pendingResources[mediaFileUrl] || 1;
     this.mediaFileUrl = mediaFileUrl;

@@ -25,7 +25,7 @@ var Program = function(gl, vertexShader, fragmentShader) {
         UniformReflectionFactories.makeVar(gl, glUniform.type, glUniform.size, textureUnitCount);
     Object.defineProperty(this, uniformName, {value: reflectionVariable} );
     if(glUniform.type === gl.SAMPLER_2D || glUniform.type === gl.SAMPLER_CUBE){ 
-      textureUnitCount += glUniform.arraySize; 
+      textureUnitCount += glUniform.size; 
     } 
   }
 };

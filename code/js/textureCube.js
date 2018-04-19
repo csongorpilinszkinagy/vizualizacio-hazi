@@ -1,5 +1,3 @@
-'use strict';
-
 const TextureCube = function(gl, mediaFileUrls) {
     gl.pendingResources[mediaFileUrls[0]] = ++gl.pendingResources[mediaFileUrls[0]] || 1;
     this.mediaFileUrls = mediaFileUrls;

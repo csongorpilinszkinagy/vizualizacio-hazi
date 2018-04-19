@@ -1,11 +1,29 @@
 Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 	precision highp float;
 	uniform vec3 eye;
+	uniform sampler2D volume;
+	uniform sampler2D texture;
+
 	varying vec3 rayDir;
 
+	bool inCube(vec3 pos, float x, float y, float z) {
+		if (pos.x > x && pos.x < x + 1.0 && pos.y > y && pos.y < y + 1.0 && pos.z > z && pos.z < z + 1.0)
+			return true;
+		return false;
+	}
 
-	void main(void) {
-    vec4 d = vec4(normalize(rayDir), 0.0);
-    gl_FragColor = vec4(d.xyz, 1);
+	void main() {
+		vec3 d = normalize(rayDir);
+
+		vec3 pos = eye;
+		for (int i=0; i< 1000; i++) {
+			if (inCube(pos, 0.0, 0.0, 5.0)) {
+				gl_FragColor = texture2D(volume, vec2(0.5, 0.5) + -pos.xy / 16.0);
+				if (gl_FragColor.r < 0.05) gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+				return;
+			}
+			pos += rayDir * 0.01;
+		}
+		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); 
 	}
 `;
