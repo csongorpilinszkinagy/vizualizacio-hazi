@@ -11,8 +11,8 @@ var Scene = function(gl) {
   this.volume = new Texture2D(gl, "assets/ufotiledvolumes/brain-at_4096.jpg");
   this.program.volume.set(this.volume);
 
-  //this.texture = new Texture2D(gl, "assets/materials/matcap6.png");
-  //this.program.volume.set(this.texture);
+  this.texture = new Texture2D(gl, "assets/materials/matcap6.png");
+  this.program.texture.set(this.texture);
 };
 
 Scene.prototype.update = function(gl, keysPressed) {
