@@ -13,17 +13,17 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 	}
 
 	vec2 inTexCoord(vec3 pos) {
-		float texZ = floor(pos.z * 256.0);
-		float texX = mod(texZ, 16.0) / 16.0;
-		float texY = (texZ - mod(texZ, 16.0)) / 256.0;
-		return vec2(texX, texY) + -pos.xy / 16.0;
+		float modZ = mod(pos.z, 16.0);
+		return (vec2(pos.x, -pos.y) + vec2(modZ * 256.0, (pos.z - modZ) * 16.0)) / 4096.0;
 	}
 
 	float sampleVolume(vec3 pos) {
+
+		vec3 pos256 = pos * 256.0;
+		vec3 discPos = vec3(floor(pos256.x), floor(pos256.y), floor(pos256.z));
 		
-		float tex1 = texture2D(volume, inTexCoord(pos)).x;
-		/*float tex2
-		float tex3
+		float tex1 = texture2D(volume, inTexCoord(discPos)).x;
+		/*float tex3
 		float tex4
 		float tex5
 		float tex6
