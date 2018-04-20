@@ -12,15 +12,37 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 		return false;
 	}
 
+	vec2 inTexCoord(vec3 pos) {
+		float texZ = floor(pos.z * 256.0);
+		float texX = mod(texZ, 16.0) / 16.0;
+		float texY = (texZ - mod(texZ, 16.0)) / 256.0;
+		return vec2(texX, texY) + -pos.xy / 16.0;
+	}
+
+	float sampleVolume(vec3 pos) {
+		
+		float tex1 = texture2D(volume, inTexCoord(pos)).x;
+		/*float tex2
+		float tex3
+		float tex4
+		float tex5
+		float tex6
+		float tex7
+		float tex8*/
+
+		return tex1;
+	}
+
 	void main() {
 		vec3 d = normalize(rayDir);
 
 		vec3 pos = eye;
 		for (int i=0; i< 1000; i++) {
-			if (inCube(pos, 0.0, 0.0, 5.0)) {
-				gl_FragColor = texture2D(volume, vec2(0.5, 0.5) + -pos.xy / 16.0);
-				if (gl_FragColor.r < 0.05) gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-				return;
+			if (inCube(pos, 0.0, 0.0, 0.0)) {
+				if (sampleVolume(pos) > 0.04) {
+					gl_FragColor = vec4(sampleVolume(pos), sampleVolume(pos), sampleVolume(pos), 1.0);
+					return;
+				}
 			}
 			pos += rayDir * 0.01;
 		}
