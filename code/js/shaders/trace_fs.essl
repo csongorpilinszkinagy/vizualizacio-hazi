@@ -11,22 +11,26 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 
 	varying vec3 rayDir;
 
+	// position inside the [0, 1] cube
 	bool inCube(vec3 pos) {
 		if (pos.x > 0.0 && pos.x < 1.0 && pos.y > 0.0 && pos.y < 1.0 && pos.z > 0.0 && pos.z < 1.0)
 			return true;
 		return false;
 	}
 
+	// 3D coordinates in 2D image coordinates
 	vec2 inTexCoord(vec3 pos) {
 		float modZ = mod(floor(pos.z * WIDTH), NUM);
 		return vec2(pos.x, -pos.y) / NUM + vec2(modZ / NUM, (floor(pos.z * WIDTH) - modZ) / NUM / NUM);
 	}
 
+	// return intensity value
 	float sampleVolume(vec3 pos) {
 		if (!inCube(pos)) return 0.0;
 
 		vec3 posDisc = vec3(floor(pos.x * WIDTH) / WIDTH, floor(pos.y * WIDTH) / WIDTH, floor(pos.z * WIDTH) / WIDTH);
 
+		// 8 points around pos
 		vec2 coord1 = inTexCoord(posDisc);
 		vec2 coord2 = inTexCoord(posDisc + vec3(0.0, 0.0, 1.0/WIDTH));
 		vec2 coord3 = inTexCoord(posDisc + vec3(0.0, 1.0/WIDTH, 0.0));
@@ -36,6 +40,7 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 		vec2 coord7 = inTexCoord(posDisc + vec3(1.0/WIDTH, 1.0/WIDTH, 0.0));
 		vec2 coord8 = inTexCoord(posDisc + vec3(1.0/WIDTH, 1.0/WIDTH, 1.0/WIDTH));
 
+		// 8 intensity values to 8 points
 		float sample1 = texture2D(volume, coord1).x;
 		float sample2 = texture2D(volume, coord2).x;
 		float sample3 = texture2D(volume, coord3).x;
@@ -45,6 +50,7 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 		float sample7 = texture2D(volume, coord7).x;
 		float sample8 = texture2D(volume, coord8).x;
 
+		// trilinear interpolation
 		float mix1 = mix(sample1, sample2, fract(pos.z * WIDTH));
 		float mix2 = mix(sample3, sample4, fract(pos.z * WIDTH));
 		float mix3 = mix(sample5, sample6, fract(pos.z * WIDTH));
@@ -70,6 +76,7 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 		vec3 pos = eye + t_start * d;
 		float step = min((t_end - t_start) / 200.0, 0.01);
 
+		// rough ray marching
 		for (int i = 0; i < 200; i++) {
 			float sample = sampleVolume(pos);
 			if (sample > THRESHOLD)
@@ -81,6 +88,7 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 
 		step = 0.0001;
 
+		// fine ray marching
 		for (int i = 0; i < 100; i++) {
 			float sample = sampleVolume(pos);
 			if (sample > THRESHOLD)
@@ -88,21 +96,9 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 			pos += d * step;
 		}
 
-		/*t_end = (pos - eye).y / d.y;
-		step = (t_end - t_start) / 2.0;
-
-		pos = eye;
-		for (int i=0; i<20; i++) {
-			float sample = sampleVolume(pos);
-			if (sample > THRESHOLD)
-				pos -= d * step;
-			else
-				pos += d*step;
-			step /= 2.0;
-		}*/
-
 		float sample = sampleVolume(pos);
 
+		// calculate normal calculate the vector in ray direction and sample color
 		if (sample > THRESHOLD) {
 			vec3 grad = vec3(
 				(sampleVolume(pos + vec3(EPSILON, 0.0, 0.0)) - sampleVolume(pos + vec3(-EPSILON, 0.0, 0.0))),
@@ -123,6 +119,7 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 			return;
 		}
 
+		// default background color
 		gl_FragColor = vec4(0.2, 0.5, 0.5, 1.0); 
 	}
 `;
